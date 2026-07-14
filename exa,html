@@ -1,6 +1,1 @@
-AttachmentWert =
-(SCHACH.position)
-+ (SKAT.wert)
-+ (ROME.ursacheWirkung)
-+ (inPIme.prime)
-+ (CLOU.calc)
+SCHACH + SKAT + ROME + inPIme + CLOU;
