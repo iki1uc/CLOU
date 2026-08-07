@@ -2,102 +2,149 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>CLOU – OctaCore³‑RESPO</title>
+<title>CLOU – 6E Engine / Sortieromat / SEEÜ-Link</title>
 
 <style>
-body { background:#000; color:#0f0; font-family:monospace; padding:20px; }
-h1, h2 { color:#6cf; }
-a { color:#6cf; display:block; margin:8px 0; }
-pre { background:#111; border:1px solid #333; padding:10px; }
-hr { border:1px solid #333; margin:25px 0; }
+  body { background:#000; color:#0f0; font-family:monospace; padding:25px; }
+  h1, h2 { color:#6cf; }
+  .box { border:1px solid #0f0; padding:20px; margin-bottom:25px; }
+  pre { background:#111; padding:10px; border:1px solid #333; }
+  a { color:#6cf; }
 </style>
 </head>
 
 <body>
 
-<h1>CLOU – OctaCore³‑RESPO</h1>
-<p>Calc‑Layer, LEGO‑Layer, Operator‑Layer, Ursache‑Layer</p>
+<h1>CLOU – 6E ENGINE</h1>
+<p>LOU‑Sortieromat · NC.command · OctaCore³ · 64‑Matrix · SEEÜ‑Startsystem</p>
 
-<hr>
+<div class="box">
+  <h2>6E‑Status</h2>
+  <pre id="e_status">Lade CLOU‑6E…</pre>
+</div>
 
-<h2>CLOU‑Status</h2>
-<pre>
-CORE = CLOU
-VERSION = 1.0
-CODE = RAW
-LAGE = 6d / 360° / OctaCore³ / 64‑Matrix / NC.command
-STATUS = Aktiv
-LEGO±1 = bereit
-NC.command = aktiv
-Ursache‑Wirkung = aktiv
-64‑Quadranten = aktiv
-</pre>
+<div class="box">
+  <h2>Sortieromat</h2>
+  <input id="sort_input" type="text" placeholder="Frage, Zeichen, Klammer eingeben">
+  <button onclick="runSortieromat()">SORTIEREN</button>
+  <pre id="sort_out">Noch keine Eingabe.</pre>
+</div>
 
-<hr>
+<div class="box">
+  <h2>SEEÜ‑Startsystem</h2>
+  <pre id="seeu_out">Warte auf Sortieromat…</pre>
+</div>
 
-<h2>CLOU‑Module</h2>
-<a href="./ID.html">Identität</a>
-<a href="./CLOU.calc">CLOU‑Berechnung</a>
-<a href="./CLOU.raw">CLOU‑Rohdaten</a>
-<a href="./CLOU.6d">CLOU‑6d</a>
-<a href="./CLOU.html">Public‑Ebene</a>
+<div class="box">
+  <h2>Greifer‑Selector</h2>
+  <pre id="greifer_out">Noch kein Greifer gewählt.</pre>
+</div>
 
-<hr>
+<div class="box">
+  <h2>CLOU‑E‑Pipeline</h2>
+  <pre id="pipeline_out">Pipeline inaktiv.</pre>
+</div>
 
-<h2>OctaCore³</h2>
-<pre>
-Achsen = 8
-Räume = 8
-Engines = 8
-OctaCore³ = aktiv
-</pre>
+<script type="module">
 
-<hr>
+// ===============================
+// 1) CLOU – 6E ENGINE
+// ===============================
 
-<h2>NC.command</h2>
-<pre>
-NCcommand = RAW + LEGO±1 + TETRIZ±1 + Achse + Lage + Raum
-Bewegung = aktiv
-SzenarioVor = aktiv
-SzenarioRück = aktiv
-Rückschluss = aktiv
-</pre>
+const CLOU_6E = {
+  L: 0,   // Logic‑E
+  O: 0,   // Orbit‑E
+  U: 0,   // Unity‑E
+  XI: 0,  // Vorwärts‑E
+  IX: 0,  // Rückwärts‑E
+  X4: 0   // Axiom‑E
+};
 
-<hr>
+function updateEStatus() {
+  document.getElementById("e_status").innerText =
+    JSON.stringify(CLOU_6E, null, 2);
+}
 
-<h2>64‑Matrix</h2>
-<pre>
-CLOU64 = 64 × (Lage + Achse + Raum)
-Quadranten = aktiv
-RAW‑Zeichen = aktiv
-</pre>
+updateEStatus();
 
-<hr>
 
-<h2>Kompatibilität</h2>
-<pre>
-Civilization = kompatibel
-Colonization = kompatibel
-Rome2 = kompatibel
-SCHACH = kompatibel
-SKAT = kompatibel
-ROME = kompatibel
-inPIme = kompatibel
-ON3 = kompatibel
-NCoperator = kompatibel
-</pre>
+// ===============================
+// 2) Sortieromat – Zeichen → Energie
+// ===============================
 
-<hr>
+function runSortieromat() {
+  const f = document.getElementById("sort_input").value;
 
-<h2>Hinweis</h2>
-<pre>
-CLOU ist der neue RESPO.
-CLOU trägt OctaCore³.
-CLOU ist 64‑Matrix‑fähig.
-CLOU ist NC.command‑fähig.
-CLOU ist LEGO±1‑fähig.
-CLOU ist Engine‑neutral.
-</pre>
+  let out = "SORTIEROMAT:\n";
+
+  for (let c of f) {
+    switch(c) {
+      case "?": CLOU_6E.L++; out += "Logic‑E +1\n"; break;
+      case "~": CLOU_6E.O++; out += "Orbit‑E +1\n"; break;
+      case "+": CLOU_6E.XI++; out += "Vorwärts‑E +1\n"; break;
+      case "-": CLOU_6E.IX++; out += "Rückwärts‑E +1\n"; break;
+      case "!": CLOU_6E.X4++; out += "Axiom‑E +1\n"; break;
+      case "#": CLOU_6E.U++; out += "Unity‑E +1\n"; break;
+      default: out += "Neutral: " + c + "\n";
+    }
+  }
+
+  document.getElementById("sort_out").innerText = out;
+  updateEStatus();
+  runSEEÜ();
+  runGreiferSelector();
+  runPipeline();
+}
+
+
+// ===============================
+// 3) SEEÜ‑Startsystem – Auto‑Auswahl
+// ===============================
+
+function runSEEÜ() {
+  let sys = "XYZ (neutral)";
+
+  if (CLOU_6E.L > 0) sys = "START8 (Raum)";
+  if (CLOU_6E.XI > 0) sys = "6IY (Direkt)";
+  if (CLOU_6E.U > 0) sys = "BEU (Balance)";
+
+  document.getElementById("seeu_out").innerText =
+    "SEEÜ‑Startsystem: " + sys;
+}
+
+
+// ===============================
+// 4) Greifer‑Selector
+// ===============================
+
+function runGreiferSelector() {
+  let g = "XYZ‑Greifer";
+
+  if (CLOU_6E.L > 0) g = "START8‑Greifer";
+  if (CLOU_6E.XI > 0) g = "6IY‑Greifer";
+  if (CLOU_6E.U > 0) g = "BEU‑Greifer";
+
+  document.getElementById("greifer_out").innerText =
+    "Greifer: " + g;
+}
+
+
+// ===============================
+// 5) CLOU‑E‑Pipeline
+// ===============================
+
+function runPipeline() {
+  const p =
+    "tmp‑respo = " + (CLOU_6E.L + CLOU_6E.O + CLOU_6E.U) + "\n" +
+    "fix = XI + IX = " + (CLOU_6E.XI + CLOU_6E.IX) + "\n" +
+    "fit = X4 = " + CLOU_6E.X4 + "\n" +
+    "fi(n) = Gesamt‑E = " +
+    (CLOU_6E.L + CLOU_6E.O + CLOU_6E.U + CLOU_6E.XI + CLOU_6E.IX + CLOU_6E.X4);
+
+  document.getElementById("pipeline_out").innerText = p;
+}
+
+</script>
 
 </body>
 </html>
