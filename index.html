@@ -2,148 +2,100 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>CLOU – 6E Engine / Sortieromat / SEEÜ-Link</title>
+<title>CLOU — ROOT Engine</title>
 
 <style>
-  body { background:#000; color:#0f0; font-family:monospace; padding:25px; }
-  h1, h2 { color:#6cf; }
-  .box { border:1px solid #0f0; padding:20px; margin-bottom:25px; }
-  pre { background:#111; padding:10px; border:1px solid #333; }
-  a { color:#6cf; }
+  body { background:#111; color:#0f0; font-family:Consolas; padding:20px; }
+  .box { border:1px solid #0f0; padding:20px; width:360px; margin-bottom:20px; }
+  .title { color:#6cf; font-size:18px; margin-bottom:10px; }
+  canvas { background:#000; display:block; margin:20px auto; }
 </style>
 </head>
 
 <body>
 
-<h1>CLOU – 6E ENGINE</h1>
-<p>LOU‑Sortieromat · NC.command · OctaCore³ · 64‑Matrix · SEEÜ‑Startsystem</p>
+<h2>CLOU — ROOT Engine</h2>
 
 <div class="box">
-  <h2>6E‑Status</h2>
-  <pre id="e_status">Lade CLOU‑6E…</pre>
+  <div class="title">System‑Impulse</div>
+  <div>CPU: <span id="cpu">–</span></div>
+  <div>GPU: <span id="gpu">–</span></div>
+  <div>RAM: <span id="ram">–</span></div>
+  <div>ROM: <span id="rom">–</span></div>
 </div>
 
 <div class="box">
-  <h2>Sortieromat</h2>
-  <input id="sort_input" type="text" placeholder="Frage, Zeichen, Klammer eingeben">
-  <button onclick="runSortieromat()">SORTIEREN</button>
-  <pre id="sort_out">Noch keine Eingabe.</pre>
+  <div class="title">ROOT‑Status</div>
+  <div>ID: iki1uc</div>
+  <div>VERSION: 1.0</div>
+  <div>CODE: RAW</div>
+  <div>LAGE: ROOT / Creator / NC</div>
+  <div>STATUS: Online</div>
 </div>
 
-<div class="box">
-  <h2>SEEÜ‑Startsystem</h2>
-  <pre id="seeu_out">Warte auf Sortieromat…</pre>
-</div>
+<canvas id="root" width="900" height="600"></canvas>
 
-<div class="box">
-  <h2>Greifer‑Selector</h2>
-  <pre id="greifer_out">Noch kein Greifer gewählt.</pre>
-</div>
+<script>
+// ------------------------------------------------------
+// CLOU — Impuls‑Generator
+// ------------------------------------------------------
 
-<div class="box">
-  <h2>CLOU‑E‑Pipeline</h2>
-  <pre id="pipeline_out">Pipeline inaktiv.</pre>
-</div>
-
-<script type="module">
-
-// ===============================
-// 1) CLOU – 6E ENGINE
-// ===============================
-
-const CLOU_6E = {
-  L: 0,   // Logic‑E
-  O: 0,   // Orbit‑E
-  U: 0,   // Unity‑E
-  XI: 0,  // Vorwärts‑E
-  IX: 0,  // Rückwärts‑E
-  X4: 0   // Axiom‑E
-};
-
-function updateEStatus() {
-  document.getElementById("e_status").innerText =
-    JSON.stringify(CLOU_6E, null, 2);
+function rand(max) {
+  return Math.floor(Math.random() * max);
 }
 
-updateEStatus();
+function CPU() { return rand(100); }
+function GPU() { return rand(100); }
+function RAM() { return rand(100); }
+function ROM() { return rand(100); }
 
+// ------------------------------------------------------
+// ROOT‑Avatar
+// ------------------------------------------------------
 
-// ===============================
-// 2) Sortieromat – Zeichen → Energie
-// ===============================
+const ctx = document.getElementById("root").getContext("2d");
+let t = 0;
 
-function runSortieromat() {
-  const f = document.getElementById("sort_input").value;
+function drawAvatar(cpu, gpu, ram, rom) {
+  ctx.clearRect(0,0,900,600);
 
-  let out = "SORTIEROMAT:\n";
+  for (let i = 0; i < 180; i++) {
+    const fade = Math.sin(t + i * 0.02);
+    if (fade < 0.2) continue;
 
-  for (let c of f) {
-    switch(c) {
-      case "?": CLOU_6E.L++; out += "Logic‑E +1\n"; break;
-      case "~": CLOU_6E.O++; out += "Orbit‑E +1\n"; break;
-      case "+": CLOU_6E.XI++; out += "Vorwärts‑E +1\n"; break;
-      case "-": CLOU_6E.IX++; out += "Rückwärts‑E +1\n"; break;
-      case "!": CLOU_6E.X4++; out += "Axiom‑E +1\n"; break;
-      case "#": CLOU_6E.U++; out += "Unity‑E +1\n"; break;
-      default: out += "Neutral: " + c + "\n";
-    }
+    const x = 450 + Math.sin(t + i * 0.01) * (cpu + 50);
+    const y = 300 + Math.cos(t + i * 0.01) * (gpu + 50);
+
+    ctx.fillStyle = `rgba(${ram*2}, ${rom*2}, 255, ${fade})`;
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
   }
-
-  document.getElementById("sort_out").innerText = out;
-  updateEStatus();
-  runSEEÜ();
-  runGreiferSelector();
-  runPipeline();
 }
 
+// ------------------------------------------------------
+// CLOU — Engine Loop
+// ------------------------------------------------------
 
-// ===============================
-// 3) SEEÜ‑Startsystem – Auto‑Auswahl
-// ===============================
+function CLOU_ENGINE() {
+  t += 0.01;
 
-function runSEEÜ() {
-  let sys = "XYZ (neutral)";
+  const cpu = CPU();
+  const gpu = GPU();
+  const ram = RAM();
+  const rom = ROM();
 
-  if (CLOU_6E.L > 0) sys = "START8 (Raum)";
-  if (CLOU_6E.XI > 0) sys = "6IY (Direkt)";
-  if (CLOU_6E.U > 0) sys = "BEU (Balance)";
+  document.getElementById("cpu").innerText = cpu;
+  document.getElementById("gpu").innerText = gpu;
+  document.getElementById("ram").innerText = ram;
+  document.getElementById("rom").innerText = rom;
 
-  document.getElementById("seeu_out").innerText =
-    "SEEÜ‑Startsystem: " + sys;
+  drawAvatar(cpu, gpu, ram, rom);
+
+  requestAnimationFrame(CLOU_ENGINE);
 }
 
-
-// ===============================
-// 4) Greifer‑Selector
-// ===============================
-
-function runGreiferSelector() {
-  let g = "XYZ‑Greifer";
-
-  if (CLOU_6E.L > 0) g = "START8‑Greifer";
-  if (CLOU_6E.XI > 0) g = "6IY‑Greifer";
-  if (CLOU_6E.U > 0) g = "BEU‑Greifer";
-
-  document.getElementById("greifer_out").innerText =
-    "Greifer: " + g;
-}
-
-
-// ===============================
-// 5) CLOU‑E‑Pipeline
-// ===============================
-
-function runPipeline() {
-  const p =
-    "tmp‑respo = " + (CLOU_6E.L + CLOU_6E.O + CLOU_6E.U) + "\n" +
-    "fix = XI + IX = " + (CLOU_6E.XI + CLOU_6E.IX) + "\n" +
-    "fit = X4 = " + CLOU_6E.X4 + "\n" +
-    "fi(n) = Gesamt‑E = " +
-    (CLOU_6E.L + CLOU_6E.O + CLOU_6E.U + CLOU_6E.XI + CLOU_6E.IX + CLOU_6E.X4);
-
-  document.getElementById("pipeline_out").innerText = p;
-}
-
+CLOU_ENGINE();
 </script>
 
 </body>
