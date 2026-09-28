@@ -2,101 +2,994 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>CLOU — ROOT Engine</title>
-
+<title>iki1uc · liveBOOT · runtime · CLOU · COACH</title>
 <style>
-  body { background:#111; color:#0f0; font-family:Consolas; padding:20px; }
-  .box { border:1px solid #0f0; padding:20px; width:360px; margin-bottom:20px; }
-  .title { color:#6cf; font-size:18px; margin-bottom:10px; }
-  canvas { background:#000; display:block; margin:20px auto; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#000;color:#c8d8e8;
+    font-family:'Consolas','Courier New',monospace;font-size:13px;overflow:hidden}
+
+  #boot{position:fixed;inset:0;background:#000;z-index:100;
+    display:flex;align-items:center;justify-content:center;flex-direction:column}
+  #boot .flash{position:absolute;inset:0;background:#fff;opacity:0;transition:opacity .08s}
+  #boot .hand{font-size:64px;opacity:0;transition:opacity .4s}
+  #boot .msg{color:#8ab0c0;font-size:12px;letter-spacing:2px;margin-top:20px;opacity:0}
+  #boot.gray{background:#a0a0a0}
+  #boot.blue{background:#0055aa}
+
+  #guru{position:fixed;inset:0;display:none;background:#000;z-index:200;padding:20px}
+  #guru .frame{position:absolute;inset:12px;border:2px solid #f00;animation:blink .5s infinite}
+  @keyframes blink{0%,100%{border-color:#f00}50%{border-color:#000}}
+  #guru .msg{color:#fff;font-size:14px;padding:30px 40px;line-height:1.8}
+
+  #wb{display:none;height:100%;flex-direction:column}
+  #top{height:26px;background:#0055aa;color:#fff;display:flex;align-items:center;
+    padding:0 12px;font-size:11px;letter-spacing:1px;gap:12px;flex-shrink:0}
+  #top b{color:#f0d080}
+  #top .right{margin-left:auto;display:flex;gap:12px}
+
+  #main{flex:1;display:grid;grid-template-columns:1.1fr 1.4fr 1fr;gap:2px;
+    background:#000;overflow:hidden;min-height:0}
+
+  .col{display:flex;flex-direction:column;gap:2px;overflow:hidden;min-height:0}
+  .panel{background:#0a0a12;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+  .panel h2{background:#0c1828;color:#5cf0ff;font-size:11px;padding:3px 8px;
+    letter-spacing:1px;font-weight:normal;flex-shrink:0;display:flex;
+    justify-content:space-between;align-items:center}
+  .panel h2 b{color:#f0d080}
+  .body{flex:1;overflow:auto;padding:8px;font-size:12px;line-height:1.5}
+  .body::-webkit-scrollbar{width:6px}
+  .body::-webkit-scrollbar-thumb{background:#2a3a4a}
+
+  /* CLOU */
+  #clouCanvas{background:#000;width:100%;display:block}
+  .impulse-row{display:flex;gap:6px;padding:6px;font-size:11px}
+  .impulse{flex:1;background:#0c1828;border:1px solid #1a2a3a;border-radius:3px;
+    padding:4px;text-align:center}
+  .impulse .k{color:#5a7288;font-size:9px;letter-spacing:1px}
+  .impulse .v{color:#5cf0ff;font-weight:bold;font-size:16px;display:block;margin-top:2px}
+  .impulse.cpu .v{color:#ff8a2a}
+  .impulse.gpu .v{color:#ff3ea5}
+  .impulse.ram .v{color:#39ff88}
+  .impulse.rom .v{color:#f0d080}
+
+  /* Signs */
+  .signs{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:6px}
+  .sign{background:#0c1828;border:1px solid #1a2a3a;border-radius:3px;
+    padding:5px 2px;text-align:center;cursor:pointer;transition:.15s}
+  .sign:hover{border-color:#5cf0ff;background:#1a2a3a}
+  .sign .s{font-size:16px;font-weight:bold;color:#0ff;display:block}
+  .sign .l{font-size:8px;color:#5a7288;letter-spacing:1px;margin-top:2px}
+
+  /* CLI */
+  .cli-line{display:flex;gap:6px;padding:1px 0;word-break:break-word}
+  .cli-line .prompt{color:#0ff;flex-shrink:0}
+  .cli-line .txt{flex:1}
+  .cli-line.err .txt{color:#f55}
+  .cli-line.ok .txt{color:#0f0}
+  .cli-line.warn .txt{color:#f0d080}
+  .cli-line.info .txt{color:#5cf0ff}
+  .cli-line.coach .txt{color:#f0a000}
+  .cli-line.hilfe .txt{color:#ff8ab0}
+  #cliRow{background:#000;border-top:1px solid #0c1828;padding:4px;display:flex;gap:6px}
+  #cliRow span{color:#0ff}
+  #cli{background:#000;color:#0f0;font-family:inherit;font-size:12px;
+    border:none;outline:none;flex:1;caret-color:#0f0}
+
+  /* 7sinn */
+  .sinn-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:6px}
+  .sinn{padding:5px 2px;text-align:center;background:#0c1828;border:1px solid #1a2a3a;
+    border-radius:4px;font-size:8px;cursor:pointer;transition:.15s}
+  .sinn:hover{border-color:#5cf0ff}
+  .sinn.on{background:#1a3a4a;border-color:#0ff;color:#0ff;
+    box-shadow:0 0 12px rgba(0,255,255,.4)}
+  .sinn .n{font-size:12px;font-weight:bold;display:block;color:#8ab0c0}
+  .sinn.on .n{color:#0ff}
+
+  /* Ghost */
+  .ghost-row{display:flex;justify-content:space-between;padding:2px 0;
+    border-bottom:1px dashed #1a2a3a;font-size:10.5px}
+  .ghost-row .k{color:#5a7288}
+  .ghost-row .v{color:#b388ff;font-weight:bold}
+
+  /* COACH */
+  .topics{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:6px}
+  .topic{padding:5px 2px;text-align:center;background:#1a1208;border:1px solid #2a2018;
+    border-radius:4px;font-size:9px;cursor:pointer;transition:.15s;color:#c8b080}
+  .topic:hover{border-color:#f0a000;color:#f0d080}
+  .topic.on{background:#3a2410;border-color:#f0d080;color:#f0d080;
+    box-shadow:0 0 12px rgba(240,208,128,.5)}
+  .topic .n{display:block;font-weight:bold;font-size:11px;color:#8a7a58}
+  .topic.on .n{color:#f0d080}
+
+  .amt{background:#0c1828;border-left:2px solid #5cf0ff;border-radius:3px;
+    padding:4px 8px;margin-bottom:3px;font-size:10.5px}
+  .amt .h{color:#5cf0ff;font-weight:bold}
+  .amt .t{color:#5a7288;font-size:9.5px;margin-top:1px}
+  .amt .c{color:#f0d080;font-size:9.5px}
+
+  .sol-issue{color:#f0d080;font-weight:bold;font-size:12px;
+    padding:4px 0;border-bottom:1px solid #1a2a3a;margin-bottom:4px}
+  .sol-step{padding:2px 0;color:#a8c8d8;font-size:11px}
+  .sol-help{color:#0ff;font-size:11px;padding:1px 0}
+  .sol-res{color:#0f0;font-size:10.5px;padding:1px 0}
+  .sol-hilfe{color:#ff8ab0;font-size:10.5px;padding:1px 0;line-height:1.45}
+
+  .sense{display:flex;gap:8px;align-items:center;padding:6px;background:#0c1828;
+    border-radius:4px;font-size:11px;margin:6px}
+  .sense .dot{width:10px;height:10px;border-radius:50%;background:#333;
+    box-shadow:0 0 8px #333}
+  .sense.fit .dot{background:#0f0;box-shadow:0 0 12px #0f0}
+  .sense.rdy .dot{background:#5cf0ff;box-shadow:0 0 12px #5cf0ff}
+  .sense.err .dot{background:#f55;box-shadow:0 0 12px #f55}
+
+  #bottom{height:24px;background:#0c1828;color:#5a7288;display:flex;
+    align-items:center;padding:0 12px;font-size:11px;gap:16px;flex-shrink:0;
+    border-top:1px solid #1a2a3a}
+  #bottom b{color:#f0d080}
+  #bottom .keys{color:#5a7288}
+  #bottom .keys b{color:#5cf0ff}
+
+  /* FINALCLOU badge */
+  .final{display:flex;gap:4px;padding:6px;flex-wrap:wrap}
+  .final span{font-size:9px;padding:2px 6px;border-radius:3px;background:#0c1828;
+    border:1px solid #1a2a3a;color:#5a7288}
+  .final span.hi{color:#f0d080;border-color:#3a2a10;background:#1a1208}
 </style>
 </head>
-
 <body>
 
-<h2>CLOU — ROOT Engine</h2>
-
-<div class="box">
-  <div class="title">System‑Impulse</div>
-  <div>CPU: <span id="cpu">–</span></div>
-  <div>GPU: <span id="gpu">–</span></div>
-  <div>RAM: <span id="ram">–</span></div>
-  <div>ROM: <span id="rom">–</span></div>
+<div id="boot">
+  <div class="flash"></div>
+  <div class="hand">🖐</div>
+  <div class="msg" id="bootMsg">KICKSTART</div>
 </div>
 
-<div class="box">
-  <div class="title">ROOT‑Status</div>
-  <div>ID: iki1uc</div>
-  <div>VERSION: 1.0</div>
-  <div>CODE: RAW</div>
-  <div>LAGE: ROOT / Creator / NC</div>
-  <div>STATUS: Online</div>
+<div id="guru">
+  <div class="frame"></div>
+  <div class="msg">
+    Software Failure · 404 KIMIND-CORE<br>
+    Die angeforderte Station existiert nicht.<br>
+    VOID → ROOT Rückführung eingeleitet.<br>
+    Guru Meditation <span id="guruCode">#00000004.0000AAC0</span>
+  </div>
 </div>
 
-<canvas id="root" width="900" height="600"></canvas>
+<div id="wb">
+  <div id="top">
+    <span>◈ <b>iki1uc</b> · liveBOOT · CLOU · COACH</span>
+    <span>v1.0</span>
+    <span class="right">
+      <span>CHIP <b id="chip">93</b></span>
+      <span>7SINN <b id="sinnCount">0/7</b></span>
+      <span>GHOST <b id="ghostState">off</b></span>
+      <span>COACH <b id="coachState">bereit</b></span>
+      <span id="clock">--:--:--</span>
+    </span>
+  </div>
+
+  <div id="main">
+
+    <!-- COL 1: CLOU -->
+    <div class="col">
+      <div class="panel" style="flex:1">
+        <h2><span>◈ CLOU · HALL</span><b id="clouStatus">ruhig</b></h2>
+        <canvas id="clouCanvas" width="400" height="280"></canvas>
+        <div class="impulse-row">
+          <div class="impulse cpu"><span class="k">CPU</span><span class="v" id="cpu">3</span></div>
+          <div class="impulse gpu"><span class="k">GPU</span><span class="v" id="gpu">90</span></div>
+          <div class="impulse ram"><span class="k">RAM</span><span class="v" id="ram">39</span></div>
+          <div class="impulse rom"><span class="k">ROM</span><span class="v" id="rom">35</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2><span>◈ ZEICHEN</span><b id="signCount">0</b></h2>
+        <div class="signs" id="signGrid"></div>
+      </div>
+
+      <div class="panel">
+        <h2><span>◈ FINALCLOU</span><b id="finalStatus">1.00</b></h2>
+        <div class="final" id="finalRow"></div>
+      </div>
+    </div>
+
+    <!-- COL 2: CLI + LÖSUNG -->
+    <div class="col">
+      <div class="panel" style="flex:1">
+        <h2><span>◈ CLI</span><span>coach · clou · sign · ort · 7sinn · ghost</span></h2>
+        <div class="body" id="cliOut"></div>
+        <div id="cliRow"><span>1&gt;</span><input id="cli" placeholder="help · clou on · sign ? · coach wohnung" autocomplete="off" autofocus></div>
+      </div>
+
+      <div class="panel" style="flex:1">
+        <h2><span>◈ LÖSUNG</span><b id="solBadge">—</b></h2>
+        <div class="body" id="solBox">
+          <div style="color:#5a7288;font-size:11px">
+            Wähle ein Thema (1–7) oder tippe:<br>
+            <code>coach wohnung zu teuer</code><br>
+            <code>ort hilfe</code> · Nummern, anonym, zum Weiterdenken
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 3: COACH + 7SINN + GHOST -->
+    <div class="col">
+      <div class="panel">
+        <h2><span>◈ COACH · THEMEN</span><b id="coachMode">bereit</b></h2>
+        <div class="topics" id="topicGrid"></div>
+        <div class="sense" id="senseBox">
+          <span class="dot"></span>
+          <span class="lbl" id="senseLbl">rdy · Bereit</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2><span>◈ 7SINN</span><b id="sinnHdr">0 / 7</b></h2>
+        <div class="sinn-grid" id="sinnGrid"></div>
+      </div>
+
+      <div class="panel">
+        <h2><span>◈ GHOST</span><b id="ghostStatus">dark</b></h2>
+        <div class="body" style="flex:0 0 auto;padding:6px">
+          <div class="ghost-row"><span class="k">state</span><span class="v" id="gState">DARK</span></div>
+          <div class="ghost-row"><span class="k">line</span><span class="v" id="gLine">present</span></div>
+          <div class="ghost-row"><span class="k">mode</span><span class="v" id="gMode">idle</span></div>
+          <div class="ghost-row"><span class="k">wraith</span><span class="v" id="gWraith">filter off</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2><span>◈ ÄMTER</span><b id="amtCount">0</b></h2>
+        <div class="body" style="flex:0 0 auto;max-height:140px" id="amtBox">
+          <div style="color:#5a7288;font-size:11px">— keine aktiv —</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="bottom">
+    <span>🖐 ready</span>
+    <span class="keys">Tasten <b>1-7</b> · <b>H</b>=help · <b>R</b>=reset · <b>C</b>=clou · <b>Esc</b>=CLI frei</span>
+    <span style="margin-left:auto" id="sysmsg">widerstand wieimmer gewonnen · revolution ist runtime</span>
+  </div>
+</div>
 
 <script>
-// ------------------------------------------------------
-// CLOU — Impuls‑Generator
-// ------------------------------------------------------
+"use strict";
+/* ═══════════════════════════════════════════════════════════════
+   iki1uc · liveBOOT · runtime · CLOU · COACH
+   © iki1uc
+   ═══════════════════════════════════════════════════════════════ */
 
-function rand(max) {
-  return Math.floor(Math.random() * max);
+/* ─── HILFE · ehrlich · anonym ─────────────────────────────── */
+const HILFE = {
+  rahmung: "Sie holen dich nicht aus dem Brunnen. Aber sie denken mit. Anonym · erste Beratung · kostenlos.",
+  deutschland: [
+    { name: "Telefonseelsorge",     tel: "0800 111 0 111", rund: "24/7",  wozu: "Sorgen · Ängste · Krisen" },
+    { name: "Telefonseelsorge",     tel: "0800 111 0 222", rund: "24/7",  wozu: "zweite Leitung" },
+    { name: "Ärztl. Bereitschaft",  tel: "116 117",        rund: "24/7",  wozu: "krank · kein Notfall" },
+    { name: "Notruf",               tel: "112",            rund: "24/7",  wozu: "akute Lebensgefahr" },
+    { name: "Polizei",              tel: "110",            rund: "24/7",  wozu: "Straftat · Gefahr" },
+    { name: "Giftnotruf",           tel: "0361 730730",    rund: "24/7",  wozu: "Vergiftung" },
+    { name: "Hilfetelefon Frauen",  tel: "0800 1160166",   rund: "24/7",  wozu: "Gewalt · anonym" },
+    { name: "Nummer gegen Kummer",  tel: "116 111",        rund: "Mo–Sa", wozu: "Kinder · Jugendliche" },
+    { name: "Bürgertelefon",        tel: "115",            rund: "Mo–Fr", wozu: "Behörde" }
+  ],
+  stadt: { name:"", rathaus:{name:"",tel:""}, notdienst:{name:"",tel:""}, hilfen:[] }
+};
+
+/* ─── ZEICHEN · Impulse ────────────────────────────────────── */
+const ZEICHEN = [
+  { s:"?", l:"FRAGE",  param:"drift",  plus:1, note:"+1 Drift" },
+  { s:"+", l:"ENERGIE",param:"raw",    plus:1, note:"+1 RAW" },
+  { s:"~", l:"ORBIT",  param:"phi",    plus:1, note:"+1 φ" },
+  { s:"!", l:"FOKUS",  param:"axis",   plus:1, note:"+1 Axis" },
+  { s:"#", l:"ROOT",   param:"base",   plus:1, note:"+1 Base" }
+];
+
+/* ─── COACH ────────────────────────────────────────────────── */
+const COACH = {
+  status:"bereit", focus:null, solution:null,
+  areas: {
+    wohnen:{ label:"🏠 Wohnen", issues:["miete zu hoch","miete","wohnungssuche","schimmel","kündigung","umzug","wohnung"], help:["Mietberatung","Wohnungsamt","Sozialhilfe","Mieterverein"] },
+    arbeit:{ label:"💼 Arbeit & Job", issues:["arbeitslosigkeit","arbeitslos","bewerbung","kündigung","mobbing","überforderung","arbeit","job","chef"], help:["Arbeitsamt","Jobcenter","Bewerbungscoaching","Rechtsberatung"] },
+    gesundheit:{ label:"❤️ Gesundheit", issues:["krankheit","krank","psychische belastung","sucht","pflege","krankenkasse","gesundheit"], help:["Krankenkasse","Sozialpsychiatrie","Suchtberatung","Pflegestützpunkt"] },
+    finanzen:{ label:"💰 Finanzen", issues:["schulden","alg ii","alg","bürgergeld","steuern","kredite","finanzen","geld"], help:["Schuldnerberatung","Jobcenter","Finanzamt","Verbraucherzentrale"] },
+    familie:{ label:"👨‍👩‍👧 Familie", issues:["kinderbetreuung","sorgerecht","gewalt","trennung","altersvorsorge","familie","kinder"], help:["Jugendamt","Familienberatung","Hilfetelefon","Sozialamt"] },
+    behoerden:{ label:"🏛️ Behörden", issues:["behörde","behörden","amt","antrag","formular","termin","ausländerbehörde","aufenthalt"], help:["Bürgeramt","Ausländerbehörde","Sozialamt","Bürgertelefon 115"] },
+    jobcenter:{ label:"🏛️ Jobcenter", issues:["jobcenter","alg i","eingliederung","vermittlung"], help:["Jobcenter Terminvereinbarung","Arbeitsamt","Sozialberatung"] }
+  },
+  aemter: {
+    jobcenter:{label:"🏛️ Jobcenter",contact:"Terminvereinbarung",tasks:["ALG II","Bürgergeld","Eingliederung"]},
+    arbeitsamt:{label:"🏛️ Arbeitsamt",contact:"Online-Portal",tasks:["Arbeitslosengeld","Weiterbildung","Vermittlung"]},
+    wohnungsamt:{label:"🏛️ Wohnungsamt",contact:"Stadtverwaltung",tasks:["Wohnberechtigungsschein","Sozialwohnung"]},
+    jugendamt:{label:"🏛️ Jugendamt",contact:"Telefon + Beratung",tasks:["Kinderbetreuung","Sorgerecht","Hilfe"]},
+    sozialamt:{label:"🏛️ Sozialamt",contact:"Persönlich oder Online",tasks:["Sozialhilfe","Grundsicherung"]},
+    gesundheitsamt:{label:"🏛️ Gesundheitsamt",contact:"Termin",tasks:["Impfung","Gesundheitszeugnis"]},
+    finanzamt:{label:"🏛️ Finanzamt",contact:"Online + Telefon",tasks:["Steuererklärung","Steuer-ID"]},
+    auslaenderbehoerde:{label:"🏛️ Ausländerbehörde",contact:"Termin",tasks:["Aufenthaltstitel","Einbürgerung"]},
+    rentenversicherung:{label:"🏛️ Rentenversicherung",contact:"Online + Telefon",tasks:["Rentenantrag","Kontenklärung"]},
+    krankenkasse:{label:"🏥 Krankenkasse",contact:"Online + Telefon",tasks:["Leistungen","Krankmeldung","Anträge"]}
+  },
+  topics:[
+    {n:1,key:"jobcenter",label:"Jobcenter",folder:"Arbeit"},
+    {n:2,key:"wohnen",label:"Wohnung",folder:"Wohnen"},
+    {n:3,key:"arbeit",label:"Arbeit",folder:"Arbeit"},
+    {n:4,key:"gesundheit",label:"Gesundheit",folder:"Persönlichkeit"},
+    {n:5,key:"familie",label:"Familie",folder:"Persönlichkeit"},
+    {n:6,key:"finanzen",label:"Schulden",folder:"Wohnen"},
+    {n:7,key:"behoerden",label:"Behörden",folder:"Mobilität"}
+  ],
+  solve(problem, forcedArea) {
+    const match = forcedArea
+      ? { area:forcedArea, issue:this.areas[forcedArea].issues[0], help:this.areas[forcedArea].help }
+      : this.matchProblem(problem);
+    if (!match) return this.fallback(problem);
+    const solution = {
+      area:match.area, issue:match.issue, help:match.help,
+      folder:this.areas[match.area]?.folder || "—",
+      aemter:this.findAemter(match.area),
+      steps:this.generateSteps(match),
+      resources:this.findResources(match)
+    };
+    this.solution = solution;
+    this.focus = match.area;
+    return solution;
+  },
+  matchProblem(input) {
+    const lower = (input||"").toLowerCase();
+    if (!lower) return null;
+    let best = null, bestLen = 0;
+    for (const [key, area] of Object.entries(this.areas)) {
+      for (const issue of area.issues) {
+        if (lower.includes(issue) && issue.length > bestLen) {
+          best = { area:key, issue, help:area.help };
+          bestLen = issue.length;
+        }
+      }
+    }
+    return best;
+  },
+  findAemter(areaKey) {
+    const map = { wohnen:["wohnungsamt","sozialamt"], arbeit:["jobcenter","arbeitsamt"],
+      gesundheit:["gesundheitsamt","krankenkasse"], finanzen:["finanzamt","jobcenter"],
+      familie:["jugendamt","sozialamt"], behoerden:["auslaenderbehoerde","sozialamt","finanzamt"],
+      jobcenter:["jobcenter","arbeitsamt"] };
+    return (map[areaKey]||[]).map(k => this.aemter[k] ? { key:k, ...this.aemter[k] } : null).filter(Boolean);
+  },
+  generateSteps(match) {
+    return [
+      `Erste Anlaufstelle: ${match.help[0]}`,
+      "Unterlagen vorbereiten: Personalausweis, Nachweise",
+      "Termin vereinbaren (Telefon oder Online)",
+      "Beratung wahrnehmen, Lösung erarbeiten",
+      "Bei Bedarf: Folge-Termin oder Antrag stellen"
+    ];
+  },
+  findResources(match) {
+    const st = HILFE.stadt;
+    return {
+      stadt: st.name || "— nicht gesetzt · tippe: ort setzen <stadt> —",
+      rathaus: st.rathaus.tel || "— nicht eingetragen —",
+      notdienst: st.notdienst.tel || "112 / 110",
+      hilfen: st.hilfen.length ? st.hilfen : []
+    };
+  },
+  fallback(input) {
+    return { status:"🔍 unklar", message:"Problem nicht eindeutig erkannt. Bitte genauer beschreiben.",
+      help:"Sage z.B. 'wohnung', 'arbeit', 'gesundheit', 'schulden', 'familie', 'behörden'",
+      aemter:[], steps:["Problem klar beschreiben","Bereich wählen","Hilfe holen"] };
+  },
+  sense() {
+    const states = { ghost:"Problem nicht erkannt", help:"Hilfe wird benötigt", error:"Problem dringend",
+      miss:"Information fehlt", fit:"Lösung in Arbeit", fin:"Problem gelöst", rdy:"Bereit für nächste Hilfe" };
+    const key = this.solution ? "fit" : "rdy";
+    return { state:key, description:states[key] };
+  }
+};
+
+/* ─── LEBENS-ORDNER ────────────────────────────────────────── */
+const LEBENS_ORDNER = {
+  "Mobilität":["Auto","Fahrrad","ÖPNV","Führerschein","Reisen","Pendeln","Flex","Notfall"],
+  "Wohnen":["Miete","Wohnung","Haus","Eigentum","Haushalt","Nachbarn","Umzug","Energie"],
+  "Arbeit":["Job","Arbeitslos","Jobwechsel","Weiterbildung","Arbeitszeiten","Team","Chef","Geld"],
+  "Persönlichkeit":["Interessen","Gesundheit","Finanzen","Freizeit","Ziele","Stress","Soziales","Digitales"]
+};
+
+/* ─── CLOU · Impulse ───────────────────────────────────────── */
+const CLOU = {
+  running: false,
+  t: 0,
+  cpu: 3, gpu: 90, ram: 39, rom: 35,
+  target: { cpu: 3, gpu: 90, ram: 39, rom: 35 },
+  signsUsed: 0,
+  final: 1.00,
+  canvas: null, ctx: null
+};
+
+function clouInit() {
+  CLOU.canvas = document.getElementById("clouCanvas");
+  CLOU.ctx = CLOU.canvas.getContext("2d");
+  const resize = () => {
+    const rect = CLOU.canvas.parentElement.getBoundingClientRect();
+    const w = Math.min(rect.width - 12, 400);
+    const h = Math.min(280, w * 0.7);
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    CLOU.canvas.width = w * dpr;
+    CLOU.canvas.height = h * dpr;
+    CLOU.canvas.style.width = w + "px";
+    CLOU.canvas.style.height = h + "px";
+    CLOU.ctx.setTransform(dpr,0,0,dpr,0,0);
+    CLOU.w = w; CLOU.h = h;
+  };
+  resize();
+  window.addEventListener("resize", resize);
 }
 
-function CPU() { return rand(100); }
-function GPU() { return rand(100); }
-function RAM() { return rand(100); }
-function ROM() { return rand(100); }
+function clouDraw() {
+  const ctx = CLOU.ctx;
+  const w = CLOU.w || 400, h = CLOU.h || 280;
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, w, h);
 
-// ------------------------------------------------------
-// ROOT‑Avatar
-// ------------------------------------------------------
+  // Langsam zum Ziel wandern
+  for (const k of ["cpu","gpu","ram","rom"]) {
+    CLOU[k] += (CLOU.target[k] - CLOU[k]) * 0.05;
+  }
 
-const ctx = document.getElementById("root").getContext("2d");
-let t = 0;
-
-function drawAvatar(cpu, gpu, ram, rom) {
-  ctx.clearRect(0,0,900,600);
-
-  for (let i = 0; i < 180; i++) {
-    const fade = Math.sin(t + i * 0.02);
-    if (fade < 0.2) continue;
-
-    const x = 450 + Math.sin(t + i * 0.01) * (cpu + 50);
-    const y = 300 + Math.cos(t + i * 0.01) * (gpu + 50);
-
-    ctx.fillStyle = `rgba(${ram*2}, ${rom*2}, 255, ${fade})`;
+  const cx = w/2, cy = h/2;
+  const N = 180;
+  for (let i = 0; i < N; i++) {
+    const fade = Math.sin(CLOU.t + i * 0.02);
+    if (fade < 0.15) continue;
+    const rx = 40 + CLOU.cpu * 1.2;
+    const ry = 40 + CLOU.gpu * 1.0;
+    const x = cx + Math.sin(CLOU.t * 0.7 + i * 0.04) * rx;
+    const y = cy + Math.cos(CLOU.t * 0.6 + i * 0.05) * ry;
+    const c = Math.floor(100 + CLOU.ram * 1.2);
+    const b = Math.floor(150 + CLOU.rom * 1.5);
+    ctx.fillStyle = `rgba(${c}, ${b}, 255, ${fade})`;
     ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.arc(x, y, 1.6 + fade * 1.2, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // Zentrum
+  ctx.fillStyle = `rgba(240,208,128,${0.4 + Math.sin(CLOU.t*1.5)*0.3})`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 3, 0, Math.PI*2);
+  ctx.fill();
+
+  if (CLOU.running) CLOU.t += 0.02;
+}
+
+function clouLoop() {
+  clouDraw();
+  if (Math.random() > 0.85 && CLOU.running) {
+    // leichte Drift
+    CLOU.target.cpu = Math.max(0, Math.min(100, CLOU.target.cpu + (Math.random()-0.5)*2));
+    CLOU.target.ram = Math.max(0, Math.min(100, CLOU.target.ram + (Math.random()-0.5)*2));
+  }
+  document.getElementById("cpu").textContent = Math.round(CLOU.cpu);
+  document.getElementById("gpu").textContent = Math.round(CLOU.gpu);
+  document.getElementById("ram").textContent = Math.round(CLOU.ram);
+  document.getElementById("rom").textContent = Math.round(CLOU.rom);
+  requestAnimationFrame(clouLoop);
+}
+
+/* ─── RUNTIME STATE ────────────────────────────────────────── */
+const R = {
+  booted: false,
+  ghost: { on:false, state:"DARK", line:"present", mode:"idle", wraith:false },
+  sinn: new Array(7).fill(false),
+  argSync: { running:false, progress:0, files:{ arg:"—", in:"—", up:"—", fit:"—" } },
+  coach: { activeArea:null, lastSolution:null },
+  history: [], histIdx: -1
+};
+
+/* ─── LOG ──────────────────────────────────────────────────── */
+function log(msg, cls = "") {
+  const out = document.getElementById("cliOut");
+  const t = new Date().toLocaleTimeString("de-DE");
+  const div = document.createElement("div");
+  div.className = "cli-line " + cls;
+  div.innerHTML = `<span class="prompt">${t}</span><span class="txt">${msg}</span>`;
+  out.appendChild(div);
+  out.scrollTop = out.scrollHeight;
+  while (out.children.length > 400) out.removeChild(out.firstChild);
+}
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+/* ─── KICKSTART ────────────────────────────────────────────── */
+async function kickstart() {
+  const boot = document.getElementById("boot");
+  const flash = boot.querySelector(".flash");
+  const hand = boot.querySelector(".hand");
+  const msg = document.getElementById("bootMsg");
+
+  flash.style.opacity = "1"; await sleep(80);
+  flash.style.opacity = "0";
+  boot.classList.add("gray"); await sleep(200);
+  msg.textContent = "KICKSTART 1.3"; msg.style.opacity = "1"; await sleep(500);
+  msg.style.opacity = "0"; hand.style.opacity = "1"; await sleep(400);
+  boot.classList.remove("gray"); boot.classList.add("blue");
+  msg.textContent = "RUNTIME · CLOU · COACH"; msg.style.opacity = "1"; hand.style.opacity = "0";
+  await sleep(400);
+
+  boot.style.display = "none";
+  document.getElementById("wb").style.display = "flex";
+
+  clouInit();
+  buildSigns();
+  buildFinalRow();
+  buildSinn();
+  buildTopics();
+  updateGhostUI();
+  updateSense();
+  clouLoop();
+
+  R.booted = true;
+  log("◈ runtime ready", "ok");
+  log("◈ CLOU · Hall geladen · CPU 3 · GPU 90 · RAM 39 · ROM 35", "coach");
+  log("◈ COACH · Humanistischer Agent", "coach");
+  log("© iki1uc", "info");
+  log("widerstand wieimmer gewonnen · revolution ist runtime", "warn");
+  log("🖐 tippe 'help' oder 'ort hilfe'", "ok");
+}
+
+/* ─── ZEICHEN ──────────────────────────────────────────────── */
+function buildSigns() {
+  const el = document.getElementById("signGrid");
+  el.innerHTML = "";
+  ZEICHEN.forEach((z, i) => {
+    const d = document.createElement("div");
+    d.className = "sign";
+    d.dataset.i = i;
+    d.innerHTML = `<span class="s">${z.s}</span><span class="l">${z.l}</span>`;
+    d.onclick = () => useSign(i);
+    el.appendChild(d);
+  });
+}
+
+function useSign(i) {
+  const z = ZEICHEN[i];
+  if (!z) return;
+  CLOU.signsUsed++;
+  if (z.param === "raw") CLOU.target.cpu = Math.min(100, CLOU.target.cpu + 3);
+  if (z.param === "phi") CLOU.target.gpu = Math.min(100, CLOU.target.gpu + 5);
+  if (z.param === "axis") CLOU.target.ram = Math.min(100, CLOU.target.ram + 4);
+  if (z.param === "base") CLOU.target.rom = Math.min(100, CLOU.target.rom + 4);
+  if (z.param === "drift") {
+    CLOU.target.cpu = Math.min(100, CLOU.target.cpu + 2);
+    CLOU.target.gpu = Math.min(100, CLOU.target.gpu + 2);
+  }
+  document.getElementById("signCount").textContent = CLOU.signsUsed;
+  log(`◈ zeichen ${z.s} · ${z.note}`, "ok");
+  updateFinal();
+}
+
+/* ─── FINALCLOU ────────────────────────────────────────────── */
+const FINAL_PARTS = [
+  { k:"3e", v:3 },
+  { k:"LEGO", v:1 },
+  { k:"TETRIZ", v:1 },
+  { k:"NC.command", v:1 },
+  { k:"RAW64", v:1 },
+  { k:"OctaCore³", v:1 },
+  { k:"SCHACH", v:1 },
+  { k:"SKAT", v:1 },
+  { k:"ROME", v:1 },
+  { k:"inPIme", v:1 },
+  { k:"Civilization", v:1 },
+  { k:"Colonization", v:1 },
+  { k:"Rome2", v:1 },
+  { k:"360°", v:1 },
+  { k:"100%", v:1 }
+];
+
+function buildFinalRow() {
+  const el = document.getElementById("finalRow");
+  el.innerHTML = "";
+  FINAL_PARTS.forEach(p => {
+    const s = document.createElement("span");
+    s.textContent = p.k;
+    s.dataset.k = p.k;
+    el.appendChild(s);
+  });
+}
+
+function updateFinal() {
+  // Einfache Formel: Zeichen die benutzt wurden hellen auf
+  const used = CLOU.signsUsed;
+  const target = used > 0 ? Math.min(1, used / 20) : 0;
+  CLOU.final = CLOU.final * 0.9 + target * 0.1;
+  document.getElementById("finalStatus").textContent = CLOU.final.toFixed(2);
+  document.querySelectorAll("#finalRow span").forEach((s, i) => {
+    s.classList.toggle("hi", i < Math.floor(used / 2));
+  });
+}
+
+/* ─── 7SINN ────────────────────────────────────────────────── */
+const SINN_NAMES = ["sehen","hören","riechen","schmecken","fühlen","denken","ahnen"];
+function buildSinn() {
+  const el = document.getElementById("sinnGrid");
+  el.innerHTML = "";
+  SINN_NAMES.forEach((name,i) => {
+    const d = document.createElement("div");
+    d.className = "sinn";
+    d.dataset.i = i;
+    d.innerHTML = `<span class="n">${i+1}</span>${name}`;
+    d.onclick = () => toggleSinn(i);
+    el.appendChild(d);
+  });
+}
+function toggleSinn(i) {
+  R.sinn[i] = !R.sinn[i];
+  const el = document.querySelector(`.sinn[data-i="${i}"]`);
+  if (el) el.classList.toggle("on", R.sinn[i]);
+  const c = R.sinn.filter(Boolean).length;
+  document.getElementById("sinnHdr").textContent = `${c} / 7`;
+  document.getElementById("sinnCount").textContent = `${c}/7`;
+  log(`7sinn · ${SINN_NAMES[i]} ${R.sinn[i]?"ON":"OFF"}`, R.sinn[i]?"ok":"warn");
+}
+function sinnAll(on) {
+  R.sinn = new Array(7).fill(!!on);
+  document.querySelectorAll(".sinn").forEach((el,i)=>el.classList.toggle("on",R.sinn[i]));
+  const c = on ? 7 : 0;
+  document.getElementById("sinnHdr").textContent = `${c} / 7`;
+  document.getElementById("sinnCount").textContent = `${c}/7`;
+  log(`7sinn · alle ${on?"an":"aus"}`, on?"ok":"warn");
+}
+
+/* ─── GHOST ────────────────────────────────────────────────── */
+function updateGhostUI() {
+  document.getElementById("ghostState").textContent = R.ghost.on ? "on" : "off";
+  document.getElementById("ghostStatus").textContent = R.ghost.state.toLowerCase();
+  document.getElementById("gState").textContent = R.ghost.state;
+  document.getElementById("gLine").textContent = R.ghost.line;
+  document.getElementById("gMode").textContent = R.ghost.mode;
+  document.getElementById("gWraith").textContent = R.ghost.wraith ? "filter on" : "filter off";
+}
+function ghostSet(on) {
+  R.ghost.on = !!on;
+  R.ghost.state = on ? "DARK-PRESENT" : "DARK";
+  R.ghost.mode = on ? "ghost-lead" : "idle";
+  updateGhostUI();
+  log(`👻 ghost ${on?"on":"off"} · state=${R.ghost.state}`, on?"ok":"warn");
+}
+
+/* ─── ORT ──────────────────────────────────────────────────── */
+function ortLoad() {
+  try {
+    const raw = localStorage.getItem("iki1uc_ort");
+    if (raw) Object.assign(HILFE.stadt, JSON.parse(raw));
+  } catch(_) {}
+}
+function ortSave() {
+  try { localStorage.setItem("iki1uc_ort", JSON.stringify(HILFE.stadt)); } catch(_) {}
+}
+function ortHilfe() {
+  log("🆘 HILFE · " + HILFE.rahmung, "hilfe");
+  log("", "");
+  HILFE.deutschland.forEach(h => {
+    log(`☎  ${h.name.padEnd(22)} ${h.tel.padEnd(18)} · ${h.rund}`, "");
+    log(`     ${h.wozu}`, "info");
+  });
+  log("", "");
+  if (HILFE.stadt.name) {
+    log(`📍 ${HILFE.stadt.name}`, "coach");
+    if (HILFE.stadt.rathaus.tel) log(`   🏛️ Rathaus   ${HILFE.stadt.rathaus.tel}`, "");
+    if (HILFE.stadt.notdienst.tel) log(`   ⚠️ Notdienst ${HILFE.stadt.notdienst.tel}`, "");
+    HILFE.stadt.hilfen.forEach(h => log(`   · ${h.name}  ${h.tel}`, "hilfe"));
+  } else {
+    log("📍 Stadt nicht gesetzt · ort setzen stadt <name>", "warn");
+  }
+}
+function ortSet(args) {
+  const f = args[0];
+  if (f === "stadt") { HILFE.stadt.name = args.slice(1).join(" "); ortSave(); log(`📍 ${HILFE.stadt.name}`, "ok"); }
+  else if (f === "rathaus") { HILFE.stadt.rathaus.tel = args.slice(1).join(" "); ortSave(); log(`🏛️ ${HILFE.stadt.rathaus.tel}`, "ok"); }
+  else if (f === "notdienst") { HILFE.stadt.notdienst.tel = args.slice(1).join(" "); ortSave(); log(`⚠️ ${HILFE.stadt.notdienst.tel}`, "ok"); }
+  else log("nutzung: ort setzen stadt|rathaus|notdienst <wert>", "err");
+}
+
+/* ─── COACH UI ─────────────────────────────────────────────── */
+function buildTopics() {
+  const el = document.getElementById("topicGrid");
+  el.innerHTML = "";
+  COACH.topics.forEach(t => {
+    const d = document.createElement("div");
+    d.className = "topic";
+    d.dataset.key = t.key;
+    d.innerHTML = `<span class="n">${t.n}</span>${t.label}`;
+    d.onclick = () => runCoachArea(t.key);
+    el.appendChild(d);
+  });
+}
+function updateSense() {
+  const s = COACH.sense();
+  const box = document.getElementById("senseBox");
+  box.className = "sense " + s.state;
+  document.getElementById("senseLbl").textContent = `${s.state} · ${s.description}`;
+  document.getElementById("coachState").textContent = s.state;
+}
+
+function renderSolution(sol) {
+  const area = COACH.areas[sol.area];
+  const box = document.getElementById("solBox");
+  let html = `<div class="sol-issue">${area?.label || sol.area} · ${sol.issue || "—"}</div>`;
+  html += `<div style="color:#5cf0ff;font-size:11px;margin-bottom:4px">Ordner: ${sol.folder || "—"}</div>`;
+  html += `<div style="color:#a8c8d8;font-weight:bold;margin-top:6px">Schritte</div>`;
+  sol.steps.forEach(st => html += `<div class="sol-step">→ ${st}</div>`);
+  html += `<div style="color:#a8c8d8;font-weight:bold;margin-top:8px">Hilfe</div>`;
+  sol.help.forEach(h => html += `<div class="sol-help">· ${h}</div>`);
+  if (sol.resources) {
+    html += `<div style="color:#a8c8d8;font-weight:bold;margin-top:8px">Deine Stadt</div>`;
+    html += `<div class="sol-hilfe">📍 ${sol.resources.stadt}</div>`;
+    html += `<div class="sol-hilfe">🏛️ Rathaus: ${sol.resources.rathaus}</div>`;
+    html += `<div class="sol-hilfe">⚠️ Notdienst: ${sol.resources.notdienst}</div>`;
+    sol.resources.hilfen.forEach(h => html += `<div class="sol-hilfe">· ${h.name} ${h.tel}</div>`);
+    html += `<div style="margin-top:6px;font-size:10px;color:#8899aa">🆘 ort hilfe → alle Nummern</div>`;
+  }
+  box.innerHTML = html;
+
+  const amtBox = document.getElementById("amtBox");
+  if (sol.aemter && sol.aemter.length) {
+    amtBox.innerHTML = sol.aemter.map(a => `
+      <div class="amt">
+        <div class="h">${a.label}</div>
+        <div class="t">${a.tasks.join(" · ")}</div>
+        <div class="c">↳ ${a.contact}</div>
+      </div>
+    `).join("");
+    document.getElementById("amtCount").textContent = sol.aemter.length;
+  } else {
+    amtBox.innerHTML = `<div style="color:#5a7288;font-size:11px">— keine aktiv —</div>`;
+    document.getElementById("amtCount").textContent = "0";
+  }
+  document.getElementById("solBadge").textContent = sol.area;
+}
+
+function runCoachArea(areaKey) {
+  const area = COACH.areas[areaKey];
+  if (!area) { log(`⚠ coach · unbekannt: ${areaKey}`, "err"); return; }
+  document.querySelectorAll(".topic").forEach(el => el.classList.toggle("on", el.dataset.key === areaKey));
+  const sol = COACH.solve(null, areaKey);
+  R.coach.activeArea = areaKey;
+  R.coach.lastSolution = sol;
+  document.getElementById("coachMode").textContent = area.label.replace(/^[^\s]+\s/, "");
+  renderSolution(sol);
+  updateSense();
+  log(`◈ coach · ${area.label}`, "coach");
+}
+
+function runCoachText(text) {
+  const sol = COACH.solve(text);
+  R.coach.lastSolution = sol;
+  if (sol.status === "🔍 unklar") {
+    log(`◈ coach · ${sol.message}`, "warn");
+    log(`  ${sol.help}`, "");
+    return;
+  }
+  const area = COACH.areas[sol.area];
+  document.querySelectorAll(".topic").forEach(el => el.classList.toggle("on", el.dataset.key === sol.area));
+  document.getElementById("coachMode").textContent = (area?.label || sol.area).replace(/^[^\s]+\s/, "");
+  renderSolution(sol);
+  updateSense();
+  log(`◈ coach · ${area?.label || sol.area} → ${sol.issue}`, "coach");
+}
+
+function coachReset() {
+  document.querySelectorAll(".topic").forEach(el => el.classList.remove("on"));
+  COACH.solution = null; COACH.focus = null;
+  R.coach.activeArea = null; R.coach.lastSolution = null;
+  document.getElementById("coachMode").textContent = "bereit";
+  document.getElementById("solBadge").textContent = "—";
+  document.getElementById("solBox").innerHTML = '<div style="color:#5a7288;font-size:11px">Wähle ein Thema (1–7) oder tippe: <code>coach wohnung zu teuer</code><br><br><code>ort hilfe</code> · Nummern, anonym</div>';
+  document.getElementById("amtBox").innerHTML = '<div style="color:#5a7288;font-size:11px">— keine aktiv —</div>';
+  document.getElementById("amtCount").textContent = "0";
+  updateSense();
+  log("⟲ coach · reset", "warn");
+}
+
+/* ─── CLI ──────────────────────────────────────────────────── */
+const cli = document.getElementById("cli");
+cli.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    const v = cli.value.trim(); cli.value = "";
+    if (v) { R.history.push(v); R.histIdx = R.history.length; log("1> " + v); runCmd(v); }
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    if (R.histIdx > 0) { R.histIdx--; cli.value = R.history[R.histIdx] || ""; }
+  } else if (e.key === "ArrowDown") {
+    e.preventDefault();
+    if (R.histIdx < R.history.length - 1) { R.histIdx++; cli.value = R.history[R.histIdx] || ""; }
+    else { R.histIdx = R.history.length; cli.value = ""; }
+  } else if (e.key === "Escape") cli.blur();
+});
+
+async function runCmd(input) {
+  const [cmd, ...args] = input.trim().split(/\s+/);
+  const c = cmd.toLowerCase();
+  switch (c) {
+    case "help":
+      log("befehle:", "ok");
+      log("  coach <text>       · problem → lösung + ämter");
+      log("  1..7               · themen (Jobcenter Wohnung Arbeit Gesundheit Familie Schulden Behörden)");
+      log("  H                  · soforthilfe");
+      log("  R                  · coach reset");
+      log("  clou on|off|status · CLOU hall steuern");
+      log("  sign ?|+|~|!|#     · zeichen werfen");
+      log("  final              · FINALCLOU formel");
+      log("  id                 · identität");
+      log("  404                · KIMIND-CORE fehlerzustand");
+      log("  ort hilfe|setzen|zeigen  · Hilfenummern + Stadt");
+      log("  ghost on|off|state|wraith");
+      log("  7sinn all|none|<n>");
+      log("  status · sysinfo · clear · guru · reboot");
+      break;
+
+    case "coach":
+      if (!args.length) { log("nutzung: coach <text> oder coach 1-7", "err"); break; }
+      if (/^[1-7]$/.test(args[0])) {
+        const t = COACH.topics[parseInt(args[0],10)-1];
+        if (t) runCoachArea(t.key);
+      } else runCoachText(args.join(" "));
+      break;
+
+    case "clou":
+      if (args[0] === "on") { CLOU.running = true; document.getElementById("clouStatus").textContent = "läuft"; log("◈ clou · läuft", "ok"); }
+      else if (args[0] === "off") { CLOU.running = false; document.getElementById("clouStatus").textContent = "ruhig"; log("◈ clou · ruhig", "warn"); }
+      else log(`◈ clou · ${CLOU.running?"läuft":"ruhig"} · CPU ${Math.round(CLOU.cpu)} GPU ${Math.round(CLOU.gpu)} RAM ${Math.round(CLOU.ram)} ROM ${Math.round(CLOU.rom)}`, "coach");
+      break;
+
+    case "sign": {
+      const idx = ZEICHEN.findIndex(z => z.s === args[0]);
+      if (idx >= 0) useSign(idx);
+      else log("nutzung: sign ? | + | ~ | ! | #", "err");
+      break;
+    }
+
+    case "final":
+      log("◈ FINALCLOU =", "coach");
+      log("  (3e + LEGO + TETRIZ) × (NC.command) × (RAW64) × (OctaCore³)", "info");
+      log("  × (SCHACH + SKAT + ROME + inPIme) × (Civilization + Colonization + Rome2)", "info");
+      log("  × (360°) × (100%)", "info");
+      log(`  aktuell: ${CLOU.final.toFixed(2)} · zeichen: ${CLOU.signsUsed}`, "ok");
+      break;
+
+    case "id":
+      log("◈ iki1uc – Identität", "coach");
+      log("  CORE    = iki1uc");
+      log("  VERSION = 1.0");
+      log("  CODE    = RAW");
+      log("  LAGE    = ROOT / Creator / NC");
+      log("  STATUS  = Online");
+      break;
+
+    case "404":
+      guru("#00000004.0000" + Math.random().toString(16).slice(2,6).toUpperCase());
+      log("◈ 404 · KIMIND-CORE · VOID → ROOT Rückführung", "err");
+      break;
+
+    case "ort":
+      if (!args[0] || args[0] === "hilfe") ortHilfe();
+      else if (args[0] === "setzen") ortSet(args.slice(1));
+      else if (args[0] === "zeigen") {
+        log(`📍 ${HILFE.stadt.name || "— nicht gesetzt —"}`, "coach");
+        if (HILFE.stadt.rathaus.tel) log(`🏛️ ${HILFE.stadt.rathaus.tel}`, "");
+        if (HILFE.stadt.notdienst.tel) log(`⚠️ ${HILFE.stadt.notdienst.tel}`, "");
+      }
+      else log("nutzung: ort hilfe | setzen <feld> | zeigen", "err");
+      break;
+
+    case "ghost":
+      if (args[0] === "on") ghostSet(true);
+      else if (args[0] === "off") ghostSet(false);
+      else if (args[0] === "wraith") { R.ghost.wraith = !R.ghost.wraith; updateGhostUI(); log(`wraith · ${R.ghost.wraith?"on":"off"}`, R.ghost.wraith?"ok":"warn"); }
+      else log(`👻 state=${R.ghost.state}`, "ok");
+      break;
+
+    case "7sinn":
+      if (args[0] === "all") sinnAll(true);
+      else if (args[0] === "none") sinnAll(false);
+      else if (/^[1-7]$/.test(args[0])) toggleSinn(parseInt(args[0],10)-1);
+      else log(`7sinn · ${R.sinn.filter(Boolean).length}/7`, "ok");
+      break;
+
+    case "lebens":
+      for (const [folder, items] of Object.entries(LEBENS_ORDNER)) {
+        log(`▸ ${folder}`, "coach");
+        log(`  ${items.join(" · ")}`, "");
+      }
+      break;
+
+    case "status":
+      log(`booted=${R.booted} clou=${CLOU.running?"on":"off"} ghost=${R.ghost.on?"on":"off"} sinn=${R.sinn.filter(Boolean).length}/7 coach=${COACH.sense().state}`, "ok");
+      break;
+
+    case "sysinfo":
+      log("iki1uc · liveBOOT · CLOU · COACH");
+      log(`  chip:    93 (3+9+81)`);
+      log(`  clou:    CPU ${Math.round(CLOU.cpu)} · GPU ${Math.round(CLOU.gpu)} · RAM ${Math.round(CLOU.ram)} · ROM ${Math.round(CLOU.rom)}`);
+      log(`  final:   ${CLOU.final.toFixed(2)} · zeichen ${CLOU.signsUsed}`);
+      log(`  7sinn:   ${R.sinn.filter(Boolean).length}/7`);
+      log(`  ghost:   ${R.ghost.state}`);
+      log(`  coach:   ${COACH.sense().state}`);
+      log(`  ort:     ${HILFE.stadt.name || "— nicht gesetzt —"}`);
+      break;
+
+    case "clear": document.getElementById("cliOut").innerHTML = ""; break;
+    case "guru": guru("#00000004.0000AAC0"); break;
+    case "reboot": location.reload(); break;
+
+    default: log(`⚠ unbekannt: ${c} · 'help'`, "err");
   }
 }
 
-// ------------------------------------------------------
-// CLOU — Engine Loop
-// ------------------------------------------------------
+/* ─── GLOBAL KEYBOARD ──────────────────────────────────────── */
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT") return;
+  if (/^[1-7]$/.test(e.key)) {
+    const t = COACH.topics[parseInt(e.key,10)-1];
+    if (t) { log(`1> ${e.key}`, ""); runCoachArea(t.key); }
+  }
+  else if (e.key === "h" || e.key === "H") {
+    log("1> H", "");
+    log("◈ SOFORTHILFE", "coach");
+    COACH.topics.forEach(t => log(`  ${t.n} · ${t.label} · ${t.folder}`, ""));
+    log("", "");
+    log("🆘 " + HILFE.rahmung, "hilfe");
+    log("   Telefonseelsorge  0800 111 0 111", "");
+    log("   Ärztl. Bereitschaft  116 117", "");
+    log("   Notruf 112 · Polizei 110", "");
+  }
+  else if (e.key === "r" || e.key === "R") { log("1> R", ""); coachReset(); }
+  else if (e.key === "c" || e.key === "C") {
+    CLOU.running = !CLOU.running;
+    document.getElementById("clouStatus").textContent = CLOU.running ? "läuft" : "ruhig";
+    log(`◈ clou ${CLOU.running?"on":"off"}`, CLOU.running?"ok":"warn");
+  }
+});
 
-function CLOU_ENGINE() {
-  t += 0.01;
-
-  const cpu = CPU();
-  const gpu = GPU();
-  const ram = RAM();
-  const rom = ROM();
-
-  document.getElementById("cpu").innerText = cpu;
-  document.getElementById("gpu").innerText = gpu;
-  document.getElementById("ram").innerText = ram;
-  document.getElementById("rom").innerText = rom;
-
-  drawAvatar(cpu, gpu, ram, rom);
-
-  requestAnimationFrame(CLOU_ENGINE);
+/* ─── GURU ─────────────────────────────────────────────────── */
+function guru(code) {
+  const g = document.getElementById("guru");
+  document.getElementById("guruCode").textContent = code;
+  g.style.display = "block";
+  const kill = () => { g.style.display = "none"; document.removeEventListener("click", kill); };
+  setTimeout(() => document.addEventListener("click", kill), 300);
 }
 
-CLOU_ENGINE();
-</script>
+/* ─── CLOCK ────────────────────────────────────────────────── */
+setInterval(() => {
+  document.getElementById("clock").textContent = new Date().toLocaleTimeString("de-DE");
+}, 1000);
 
+/* ─── BOOT ─────────────────────────────────────────────────── */
+ortLoad();
+kickstart();
+
+/* ─── PUBLIC API ───────────────────────────────────────────── */
+window.RUNTIME = window.R = Object.assign(R, {
+  cli: (cmd) => runCmd(cmd),
+  coach: { solve: (t) => COACH.solve(t), areas: COACH.areas, aemter: COACH.aemter, topics: COACH.topics },
+  clou: CLOU,
+  ort: HILFE,
+  lebens: LEBENS_ORDNER,
+  zeichen: ZEICHEN,
+  state: () => ({
+    clou: { cpu: CLOU.cpu, gpu: CLOU.gpu, ram: CLOU.ram, rom: CLOU.rom, final: CLOU.final },
+    ghost: { ...R.ghost }, sinn: [...R.sinn],
+    coach: COACH.sense(), stadt: HILFE.stadt.name
+  })
+});
+
+console.log("%c◈ iki1uc · liveBOOT · CLOU · COACH", "color:#f0d080;font-weight:bold;font-size:14px");
+console.log("© iki1uc");
+console.log("→ R.cli('help') · R.cli('ort hilfe') · R.clou · R.state()");
+</script>
 </body>
 </html>
