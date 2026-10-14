@@ -2,26 +2,179 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>iki1uc – ID</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iki1uc – ID – face 3 face ohne fb</title>
 <style>
-body { background:#000; color:#0f0; font-family:monospace; }
-h1 { color:#6cf; }
-pre { background:#111; border:1px solid #333; padding:10px; }
+  body { background:#000; color:#0f0; font-family:monospace; padding:20px; margin:0; }
+  h1 { color:#6cf; text-shadow:0 0 20px #6cf; font-weight:300; letter-spacing:3px; }
+  pre { background:#111; border:1px solid #333; padding:12px; border-radius:8px; overflow:auto; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  @media(max-width:800px){.grid{grid-template-columns:1fr}}
+  .panel { background:rgba(255,255,255,0.03); border:1px solid rgba(0,200,255,0.08); border-radius:10px; padding:12px; }
+  .panel h2 { font-size:10px; color:#3d5a70; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+  video { width:100%; max-width:420px; background:#000; border:1px solid #333; border-radius:8px; }
+  button { background:#0f0; color:#000; border:none; padding:4px 12px; border-radius:4px; font-family:monospace; font-size:10px; font-weight:bold; cursor:pointer; }
+  button.sec { background:transparent; color:#0f0; border:1px solid #0f0; }
+  .status { font-size:10px; color:#5a7a8a; margin-top:4px; }
+  .gold { color:#ffd700; } .cyan { color:#66ccff; }
 </style>
 </head>
-
 <body>
 
-<h1>iki1uc – Identität</h1>
+<h1>iki1uc – Identität – face 3 face ohne fb</h1>
 
-<pre>
+<pre id="coreBlock">
 CORE = iki1uc
 VERSION = 1.0
 CODE = RAW
 LAGE = ROOT / Creator / NC
 STATUS = Online
+FACE = 3 face ohne fb = optinlichkeit
+n = ?
 </pre>
+
+<div class="grid">
+
+  <div class="panel">
+    <h2>👁 OPTINLICHKEIT – FACE 3 FACE – OHNE FB</h2>
+    <video id="faceVideo" autoplay muted playsinline></video>
+    <div class="status">Kamera: <span id="camStatus">aus</span> | n erkannt: <span id="nDetected" class="gold">?</span></div>
+    <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+      <button id="btnCam" class="cyan">👁 Kamera face 3 face starten</button>
+      <button id="btnStopCam" class="sec">⏹ Stop</button>
+      <button id="btnN3" class="sec">n=3</button>
+      <button id="btnN9" class="sec">n=9</button>
+      <button id="btnN81" class="sec">n=81</button>
+      <button id="btnNID" class="sec">n=identity</button>
+    </div>
+    <pre id="faceLog" style="max-height:120px; font-size:8px; margin-top:8px;">face 3 face ohne fb bereit...
+optinlichkeit = sehen ohne fb
+</pre>
+  </div>
+
+  <div class="panel">
+    <h2>●▲⊖ ●▲✦⊕ ○↗□⊕△◇↘⊗ – 9 vs 9 = IDENTITY</h2>
+    <pre id="identityBlock" style="font-size:9px;">
+bank io/oi / boerse ei/ie / markt xi/ix / mana / welches der spiele / schach brett soccer feld / figur rolle / alle home qi/iq / alle orte zi/iz
+vs
+bank io/oi / boerse ei/ie / markt xi/ix / mana / welches der spiele / schach brett soccer feld / figur rolle / alle home qi/iq / alle orte zi/iz
+
+= 9 vs 9 = identity
+
+{
+  "cube": "9hoch9",
+  "status": "identity",
+  "face": "3 face ohne fb"
+}
+    </pre>
+    <div class="status">FINALCLOU: (3e + 【entity-LEGO¦canonical_name=LEGO】 + TETRIZ) × (NC.command) × (RAW64) × (OctaCore³) × (SCHACH + SKAT + ROME + inPIme) × (Civilization + Colonization + Rome2) × (360°) × (100%)</div>
+    <div style="margin-top:8px;">
+      <button id="btnSetID" class="cyan">🆔 ID setzen n dazu</button>
+      <button id="btnCalcN" class="sec">📐 n berechnen</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// CORE = iki1uc – ID – mit Code der können hat n dazu
+const CORE = {
+  name: "iki1uc",
+  version: "1.0",
+  code: "RAW",
+  lage: "ROOT / Creator / NC",
+  status: "Online",
+  face: "3 face ohne fb = optinlichkeit",
+  n: null,
+  cube: "9hoch9",
+  identity: null
+};
+
+let stream = null;
+
+function logFace(msg){
+  const el = document.getElementById('faceLog');
+  el.textContent += "\n" + msg;
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateCore(){
+  const block = document.getElementById('coreBlock');
+  block.textContent = `CORE = ${CORE.name}
+VERSION = ${CORE.version}
+CODE = ${CORE.code}
+LAGE = ${CORE.lage}
+STATUS = ${CORE.status}
+FACE = ${CORE.face}
+n = ${CORE.n === null ? "?" : CORE.n}
+cube = ${CORE.cube}
+identity = ${CORE.identity ? JSON.stringify(CORE.identity) : "?"}
+9 = ●▲⊖ ●▲✦⊕ ○↗□⊕△◇↘⊗
+9 vs 9 = identity`;
+}
+
+function setN(n){
+  CORE.n = n;
+  if(n === 3) CORE.identity = { "3hoch3": 27, "status": "3 Tupfen" };
+  if(n === 9) CORE.identity = { "9hoch9": Math.pow(9,9), "status": "identity = 9 vs 9", "9": "●▲⊖ ●▲✦⊕ ○↗□⊕△◇↘⊗" };
+  if(n === 81) CORE.identity = { "81": 81, "status": "MATRIX81 = 9x9", "geimpft": "immer nur 3 oder 9 Tupfen zeigen" };
+  if(n === "identity") CORE.identity = { "cube": "9hoch9", "status": "identity", "value": Math.pow(9,9), "9vs9": "identity" };
+  
+  document.getElementById('nDetected').textContent = n;
+  updateCore();
+  logFace(`n dazu = ${n} → Code kann: ${JSON.stringify(CORE.identity)}`);
+  
+  // biomisieren chain: b.i.o → miseren → atomiesieren → würfeliesieren → uefisieren → os iesieren → essensieren → portionieren → tupfen
+  logFace(`biomisiert: b.i.o → atomisiert → gewürfelt → portioniert → getupft n=${n}`);
+}
+
+async function startFace(){
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+    const video = document.getElementById('faceVideo');
+    video.srcObject = stream;
+    document.getElementById('camStatus').textContent = "an = face 3 face ohne fb";
+    document.getElementById('camStatus').className = "gold";
+    logFace("👁 optinlichkeit face 3 face gestartet - ohne fb - direkt bei mir");
+    logFace("Kamera = optinlichkeit = sehen = 3 face");
+    // auto n erkennen: wenn face da, dann n=9 vs 9 = identity
+    setTimeout(()=> setN("identity"), 1000);
+  }catch(e){
+    document.getElementById('camStatus').textContent = "fehler: " + e.message;
+    logFace("Kamera Fehler: " + e.message + " - trotzdem face 3 face ohne fb = optinlichkeit ohne Kamera = Code kann n dazu");
+    setN(9);
+  }
+}
+
+function stopFace(){
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+  document.getElementById('camStatus').textContent = "aus";
+  logFace("face 3 face gestoppt");
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  updateCore();
+  document.getElementById('btnCam').addEventListener('click', startFace);
+  document.getElementById('btnStopCam').addEventListener('click', stopFace);
+  document.getElementById('btnN3').addEventListener('click', ()=> setN(3));
+  document.getElementById('btnN9').addEventListener('click', ()=> setN(9));
+  document.getElementById('btnN81').addEventListener('click', ()=> setN(81));
+  document.getElementById('btnNID').addEventListener('click', ()=> setN("identity"));
+  document.getElementById('btnSetID').addEventListener('click', ()=>{
+    const n = prompt("n dazu? 3, 9, 81 oder identity:", "9");
+    if(n){ setN(isNaN(n) ? n : parseInt(n)); }
+  });
+  document.getElementById('btnCalcN').addEventListener('click', ()=>{
+    // FINALCLOU berechnen mit n
+    const n = CORE.n === null ? 9 : (typeof CORE.n === 'number' ? CORE.n : 9);
+    const final = (3 + 27 + 4) * 1 * 64 * Math.pow(8,3) * (8+4+4+4) * (3) * 360 * 100; // vereinfacht FINALCLOU
+    logFace(`FINALCLOU mit n=${n}: (3e+LEGO+TETRIZ) × ... = ${final} × n = ${final * n}`);
+    logFace(`n dazu = Code kann haben n = ${n} = biomisiert portioniert getupft`);
+  });
+  logFace("ID.html geladen - optinlichkeit face 3 face ohne fb - Code muss auch können haben n dazu = bereit");
+  logFace("9 vs 9 = identity = face 3 face = ohne fb");
+});
+</script>
 
 </body>
 </html>
